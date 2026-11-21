@@ -77,8 +77,9 @@ one, two, and three suggestions without changing the owner's listings.
 | Shopping bag | Reviewed; on the continuing branch |
 | Checkout | Reviewed; on the continuing branch |
 | Order confirmation | Reviewed; on the continuing branch |
-| Guest order lookup | Ready for desktop and mobile review |
-| Order details and delivery tracking | Next after lookup review; not started |
+| Guest order lookup | Reviewed; orange Back to shop button added |
+| Order details and delivery tracking | Ready for desktop and mobile review |
+| Account overview and order history | Next after order details review; not started |
 
 For the shopping bag, open **Cart** from the storefront. Check item names,
 unit prices and line totals, quantity and Remove controls, the empty state,
@@ -136,6 +137,24 @@ entered details, and repeated submissions are blocked while a request is busy.
 Browser review uses simulated responses for lookup requests, so no email is
 sent. Do not submit the live lookup form as part of a layout review. Continue
 to order details and delivery tracking after this form has been reviewed.
+
+For order details, open **View test order** from a local demo confirmation,
+or **View order** from your account history. Guest links still require a signed,
+unexpired token; account orders remain available only to their owner.
+
+Check the full order ID, item quantities and line totals, shipping, saved tax,
+discount, total, and any refund. Payment status and delivery progress appear
+separately. Only the saved delivery stage is current; later stages remain
+upcoming. Pending payments, demo orders, refunds, and unknown states do not
+claim that a real delivery is in progress. Demo addresses and tracking are
+explicitly labeled as samples.
+
+**Refresh status** reloads the same protected order using GET. It does not
+charge a card, send email, or contact a carrier. **Copy order ID** and **Copy
+tracking number** provide confirmation or a manual-copy fallback if clipboard
+access is unavailable. Long IDs, emails, product names and tracking numbers
+wrap on phones. Browser review uses isolated sample orders only. Review this
+section before continuing to the account overview and order history.
 
 ### Featured picks
 

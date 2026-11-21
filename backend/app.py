@@ -39,6 +39,7 @@ from notifications import store_settings, queue_order_notice, queue_token_messag
 from launch_readiness import launch_readiness, sales_prerequisite_failures, OWNER_REVIEW_TASKS
 from backend.catalog import serialize_product, bundle_data, public_catalog, suggested_catalog_products
 from backend.serializers import serialize_order
+from backend.order_details import order_detail_view
 from backend.merchandising import build_home_merchandising
 from backend.guest_orders import (guest_checkout_enabled, guest_order_token, guest_token_matches,
     guest_order_signer, GUEST_ORDER_MAX_AGE_SECONDS)
@@ -572,7 +573,8 @@ def order_detail_page(order_id: str, request: Request):
             if not line.get('image_url'):
                 product = db.get(Product,line.get('id')) if isinstance(line.get('id'),int) else None
                 line['image_url'] = product.image_url if product else '/static/images/default.svg'
-    return templates.TemplateResponse(request,'order_detail.html',{'customer':customer,'order':data})
+    return templates.TemplateResponse(request,'order_detail.html',{
+        'customer':customer, 'order':data, 'view':order_detail_view(data), 'guest':False})
 
 @app.get('/api/account/orders/{order_id}')
 def order_detail_api(order_id: str, request: Request):
@@ -1421,7 +1423,7 @@ def guest_order_detail(token: str, request: Request):
             raise HTTPException(404, 'Order link is invalid or expired.')
         details = serialize_order(order)
     response = templates.TemplateResponse(request, 'order_detail.html', {
-        'order':details, 'guest':True, 'customer':None
+        'order':details, 'view':order_detail_view(details), 'guest':True, 'customer':None
     })
     response.headers['Cache-Control'] = 'no-store, private'
     response.headers['Referrer-Policy'] = 'no-referrer'

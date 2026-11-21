@@ -1,5 +1,8 @@
 /* Guest order lookup only. Shared confirmation styles supply the page shell. */
 .tm-guest-lookup-body [hidden]{display:none!important}
+.tm-guest-lookup-body .tm-confirmation-header-link{background:var(--tm-orange);border-color:var(--tm-orange);color:#082956;font-weight:800}
+.tm-guest-lookup-body .tm-confirmation-header-link:hover{background:var(--tm-orange-hover);border-color:var(--tm-orange-hover);color:#082956}
+.tm-guest-lookup-body .tm-confirmation-header .tm-confirmation-header-link:focus-visible{outline-color:#fff}
 .tm-guest-lookup-body .tm-lookup-intro{max-width:720px;margin-bottom:28px}
 .tm-guest-lookup-body .tm-lookup-intro>p:last-child{color:#d1e1f1;font-size:1rem;line-height:1.7;margin:0}
 .tm-guest-lookup-body #guest-order-lookup{display:grid;gap:18px;margin-top:22px}
