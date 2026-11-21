@@ -1,10 +1,59 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>Order #{{order.id[:8]|upper}} | TrueMerit Cleaning Supplies</title><link rel="stylesheet" href="/static/style.css?v=7-3"><link rel="stylesheet" href="/static/truemerit-theme.css?v=orange-unified-2"><link rel="icon" href="/static/images/favicon.svg"></head>
-<body class="checkout-body"><header class="checkout-top"><a class="brand" href="/"><img class="tm-brand-logo" src="/static/images/truemerit-logo.svg" alt="TrueMerit Cleaning Supplies" width="218" height="74"></a><a class="checkout-back" href="{% if guest %}/guest/order-lookup{% else %}/account{% endif %}">← {% if guest %}Guest order lookup{% else %}Back to account{% endif %}</a></header>
-<main class="v6-order-wrap"><div class="section-kicker gold">TRUEMERIT CLEANING SUPPLIES / ORDER DETAILS</div><h1>Order <em>#{{order.id[:8]|upper}}</em></h1><p class="v6-muted">Placed {{order.created_at[:10]}} · {{order.email if guest else customer.email}}</p>
-{% if order.status == 'demo' %}<div class="checkout-simulation"><strong>DEMO ORDER / NOT PAID</strong><span>No money was collected, and no real delivery is scheduled. This is only a test.</span></div>{% endif %}
-<div class="v6-order-columns"><section class="v6-order-panel"><h2>Items in your order</h2>{% for item in order['items'] %}<div class="v6-order-product"><img alt="" src="{{item.image_url or '/static/images/default.svg'}}"><div><strong>{{item.name}}</strong><small>Quantity {{item.qty}} · {{'${:,.2f}'.format(item.price_cents / 100) }} each</small></div><b>{{'${:,.2f}'.format(item.price_cents * item.qty / 100)}}</b></div>{% endfor %}
-<div class="v6-order-total"><span>Subtotal</span><strong>{{'${:,.2f}'.format(order.subtotal_cents/100)}}</strong></div>{% if order.discount_cents %}<div class="v6-order-total"><span>Discount{% if order.promo_code %} ({{order.promo_code}}){% endif %}</span><strong>−{{'${:,.2f}'.format(order.discount_cents/100)}}</strong></div>{% endif %}<div class="v6-order-total"><span>Shipping</span><strong>{{'${:,.2f}'.format(order.shipping_cents/100)}}</strong></div>{% if order.tax_cents %}<div class="v6-order-total"><span>Sales tax</span><strong>{{'${:,.2f}'.format(order.tax_cents/100)}}</strong></div>{% endif %}<div class="v6-order-total v6-order-total-grand"><span>{% if order.status == 'demo' %}Demo total (not charged){% else %}Order total{% endif %}</span><strong>{{'${:,.2f}'.format(((order.paid_total_cents if order.paid_total_cents else order.subtotal_cents+order.shipping_cents-order.discount_cents))/100)}}</strong></div>{% if order.refunded_cents %}<div class="v6-order-total"><span>Refunded</span><strong>{{'${:,.2f}'.format(order.refunded_cents/100)}}</strong></div>{% endif %}</section>
-<aside class="v6-order-panel"><div class="section-kicker gold">DELIVERY PROGRESS</div><h2>{{order.fulfillment_status|replace('_',' ')|title}}</h2><div class="v6-status-flow"><span>Placed</span><span>Processing</span><span>Shipped</span><span>Delivered</span></div><p class="v6-muted">Payment: <strong>{{'DEMO — NOT PAID' if order.status == 'demo' else order.status|replace('_',' ')|upper}}</strong></p>
-{% if order.carrier or order.tracking_number %}<h3>Shipping tracking</h3><p class="v6-muted">Carrier: {{order.carrier or 'Not specified'}}<br>Tracking: <strong>{{order.tracking_number or 'Not available'}}</strong></p>{% endif %}
-{% set address = order.shipping_details.get('address', {}) if order.shipping_details else {} %}{% if address %}<h3>Delivery address</h3><p class="v6-muted">{{address.get('name','')}}<br>{{address.get('line1','')}}<br>{% if address.get('line2') %}{{address.get('line2')}}<br>{% endif %}{{address.get('city','')}} {{address.get('state','')}} {{address.get('postal_code','')}}</p>{% endif %}
-<a href="{% if guest %}/guest/order-lookup{% else %}/account{% endif %}" class="v6-outline-link">← {% if guest %}Guest order lookup{% else %}All your orders{% endif %}</a></aside></div></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow"><meta name="referrer" content="no-referrer">
+<title>Order #{{ order.id[:8]|upper }} | TrueMerit Cleaning Supplies</title>
+<link rel="icon" href="/static/images/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/style.css?v=7-4">
+<link rel="stylesheet" href="/static/truemerit-theme.css?v=orange-unified-2">
+<link rel="stylesheet" href="/static/truemerit-confirmation.css?v=2">
+<link rel="stylesheet" href="/static/truemerit-order-detail.css?v=1">
+</head>
+<body class="tm-confirmation-body tm-order-body">
+<header class="tm-confirmation-header"><a class="brand" href="/" aria-label="TrueMerit Cleaning Supplies home"><img class="tm-brand-logo" src="/static/images/truemerit-logo.svg" alt="TrueMerit Cleaning Supplies" width="218" height="74"></a><a class="tm-confirmation-header-link" href="/">Back to shop</a></header>
+<main class="tm-confirmation-wrap" id="order-details">
+  <div class="tm-order-intro">
+    <p class="tm-confirmation-kicker">YOUR ORDER / {% if guest %}PRIVATE GUEST ACCESS{% else %}MY ACCOUNT{% endif %}</p>
+    <h1>Order <em>#{{ order.id[:8]|upper }}</em></h1>
+    <p class="tm-order-date">Placed <time datetime="{{ order.created_at or '' }}">{{ view.placed_date }}</time></p>
+    <div class="tm-order-reference"><span>Full order ID</span><span class="tm-order-code" id="order-full-id">{{ order.id }}</span><button type="button" class="tm-order-copy" data-copy-target="order-full-id" data-copy-label="Order ID" data-copy-feedback="order-id-feedback" hidden>Copy order ID</button></div>
+    <p class="tm-order-copy-feedback" id="order-id-feedback" role="status" aria-live="polite" aria-atomic="true"></p>
+  </div>
+  <section class="tm-confirmation-panel tm-order-delivery" aria-labelledby="order-delivery-title">
+    <div class="tm-order-status-heading"><div><p class="tm-confirmation-eyebrow">{% if view.demo %}DEMO DELIVERY{% else %}DELIVERY PROGRESS{% endif %}</p><h2 id="order-delivery-title">{{ view.delivery_title }}</h2></div><span class="tm-order-payment is-{{ view.payment_tone }}">{{ view.payment_label }}</span></div>
+    <p class="tm-order-status-note">{{ view.delivery_note }}</p>
+    {% if view.progress %}<ol class="tm-order-progress" aria-label="Delivery progress">{% for step in view.progress %}<li class="is-{{ step.state }}"{% if step.current %} aria-current="step"{% endif %}><span class="tm-order-step-mark" aria-hidden="true">{% if step.state == 'complete' %}<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4 10-10"/></svg>{% endif %}</span><span><strong>{{ step.label }}</strong><small>{{ step.note }}</small></span></li>{% endfor %}</ol>{% endif %}
+    {% if order.status == 'refunded' %}<p class="tm-order-saved-status">Last saved delivery status: <strong>{{ view.fulfillment_label }}</strong></p>{% endif %}
+    {% if order.carrier or order.tracking_number %}
+    <div class="tm-order-tracking"><h3>{% if view.demo %}Sample tracking details{% else %}Shipping tracking{% endif %}</h3><dl><div><dt>Carrier</dt><dd>{{ order.carrier or 'Not specified' }}</dd></div><div><dt>Tracking number</dt><dd class="tm-order-code" id="order-tracking-number">{{ order.tracking_number or 'Not available yet' }}</dd></div>{% if view.shipped_date %}<div><dt>{% if view.demo %}Sample ship date{% else %}Shipped{% endif %}</dt><dd>{{ view.shipped_date }}</dd></div>{% endif %}</dl>{% if order.tracking_number %}<button class="tm-order-copy" type="button" data-copy-target="order-tracking-number" data-copy-label="Tracking number" data-copy-feedback="order-tracking-feedback" hidden>Copy tracking number</button><p class="tm-order-copy-feedback" id="order-tracking-feedback" role="status" aria-live="polite" aria-atomic="true"></p>{% endif %}</div>
+    {% elif not view.demo and order.status in ['paid', 'partially_refunded'] %}<p class="tm-order-tracking-empty">No tracking number has been added yet.</p>{% endif %}
+    <div class="tm-order-refresh"><p>Status reflects updates saved by TrueMerit.</p><form method="get"><button type="submit">Refresh status</button></form></div>
+  </section>
+  <div class="tm-confirmation-grid tm-order-grid">
+    <section class="tm-confirmation-panel tm-order-items" aria-labelledby="order-items-title">
+      <h2 id="order-items-title">Items in your order</h2>
+      {% if order['items'] %}<ul class="tm-order-item-list">{% for item in order['items'] %}<li><img src="{{ item.image_url or '/static/images/default.svg' }}" alt="" width="72" height="72" loading="lazy"><div class="tm-order-item-info"><h3>{{ item.name }}</h3><p>Quantity {{ item.qty }} <span>· {{ '${:,.2f}'.format(item.price_cents / 100) }} each</span></p></div><strong class="tm-order-line-total">{{ '${:,.2f}'.format(item.price_cents * item.qty / 100) }}</strong></li>{% endfor %}</ul>{% else %}<p>Item details aren't available for this order. Contact TrueMerit for help.</p>{% endif %}
+      <dl class="tm-confirmation-totals tm-order-totals">
+        <div><dt>Items subtotal</dt><dd>{{ '${:,.2f}'.format(order.subtotal_cents / 100) }}</dd></div>
+        {% if order.discount_cents %}<div><dt>Discount{% if order.promo_code %}<span class="tm-order-discount-code">{{ order.promo_code }}</span>{% endif %}</dt><dd>−{{ '${:,.2f}'.format(order.discount_cents / 100) }}</dd></div>{% endif %}
+        <div><dt>Shipping</dt><dd>{{ '${:,.2f}'.format(order.shipping_cents / 100) }}</dd></div>
+        {% if order.tax_cents %}<div><dt>Sales tax</dt><dd>{{ '${:,.2f}'.format(order.tax_cents / 100) }}</dd></div>{% endif %}
+        <div class="tm-confirmation-total"><dt>{% if view.demo %}Demo total{% else %}Order total{% endif %}</dt><dd>{{ '${:,.2f}'.format(view.total_cents / 100) }}</dd></div>
+        {% if order.refunded_cents %}<div class="tm-order-refund"><dt>Refunded</dt><dd>{{ '${:,.2f}'.format(order.refunded_cents / 100) }}</dd></div>{% endif %}
+      </dl>
+      {% if view.demo %}<p class="tm-confirmation-note">Demo total only. No payment was collected.</p>{% endif %}
+    </section>
+    <aside class="tm-order-sidebar">
+      <section class="tm-confirmation-panel" aria-labelledby="order-address-title"><p class="tm-confirmation-eyebrow">{% if view.demo %}TEST DETAILS{% else %}DELIVERY DETAILS{% endif %}</p><h2 id="order-address-title">{% if view.demo %}Sample delivery address{% else %}Delivery address{% endif %}</h2>
+        {% if view.address_lines %}<address>{% for line in view.address_lines %}<span>{{ line }}</span>{% endfor %}</address>{% else %}<p>No delivery address is available. Contact TrueMerit if you need help.</p>{% endif %}
+        <dl class="tm-order-contact">{% if view.shipping_service %}<div><dt>Delivery service</dt><dd>{{ view.shipping_service }}</dd></div>{% endif %}<div><dt>Checkout email</dt><dd>{{ order.email or 'Not available' }}</dd></div></dl>
+      </section>
+      <section class="tm-confirmation-panel tm-order-help" aria-labelledby="order-help-title"><h2 id="order-help-title">Need a hand?</h2><p>Have a question about this order? Keep your full order ID handy when you contact us.</p><nav aria-label="Order support"><a href="/information/contact">Contact TrueMerit</a><a href="{% if guest %}/guest/order-lookup{% else %}/account{% endif %}">{% if guest %}Guest order lookup{% else %}All your orders{% endif %}</a><a href="/information/shipping">Shipping information</a><a href="/information/returns">Returns &amp; refunds</a></nav></section>
+    </aside>
+  </div>
+  <footer class="tm-confirmation-footer"><p>TrueMerit Cleaning Supplies</p><a href="/">Continue shopping</a></footer>
+</main>
+<script src="/static/js/order-detail.js?v=1" defer></script>
+</body>
+</html>
