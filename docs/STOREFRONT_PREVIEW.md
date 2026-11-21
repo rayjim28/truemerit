@@ -76,9 +76,9 @@ one, two, and three suggestions without changing the owner's listings.
 | Product footer | Reviewed; on the continuing branch |
 | Shopping bag | Reviewed; on the continuing branch |
 | Checkout | Reviewed; on the continuing branch |
-| Order confirmation | Ready for desktop and mobile review |
-| Guest order lookup | Next after confirmation review; not started |
-| Order details and delivery tracking | After guest lookup; not started |
+| Order confirmation | Reviewed; on the continuing branch |
+| Guest order lookup | Ready for desktop and mobile review |
+| Order details and delivery tracking | Next after lookup review; not started |
 
 For the shopping bag, open **Cart** from the storefront. Check item names,
 unit prices and line totals, quantity and Remove controls, the empty state,
@@ -123,6 +123,19 @@ session. Pending payments, unrelated items, later additions, and repeated
 receipt visits keep the appropriate bag contents. Browser checks use isolated
 sample records and storage, with no real purchases or messages. Review this
 section before continuing to guest order lookup and then order details.
+
+For guest order lookup, open `/guest/order-lookup`. It uses the full 36-character
+order ID and checkout email for a paid guest order. Pasted IDs with surrounding
+spaces, an optional `#`, or uppercase letters are normalized before validation.
+Invalid fields show inline guidance without sending a request. Success uses
+the same conditional acknowledgement for matching and nonmatching details;
+private order data is not displayed on the lookup page. The customer can use
+different details after acknowledging the inbox message. Errors retain the
+entered details, and repeated submissions are blocked while a request is busy.
+
+Browser review uses simulated responses for lookup requests, so no email is
+sent. Do not submit the live lookup form as part of a layout review. Continue
+to order details and delivery tracking after this form has been reviewed.
 
 ### Featured picks
 
